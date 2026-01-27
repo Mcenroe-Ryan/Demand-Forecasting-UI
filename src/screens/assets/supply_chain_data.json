@@ -1,0 +1,500 @@
+{
+  "skus": [
+    {
+      "id": "CS050500D",
+      "name": "Sweet Mixes",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "currentLocation": "Rajkot",
+      "currentInventory": 4567,
+      "nextWeekDemand": 5879,
+      "demandForecast": {
+        "actual": [          
+          { "week": 1, "units": 12000 },
+          { "week": 2, "units": 10000 },
+          { "week": 3, "units": 15000 }
+        ],
+        "scenarios": {
+          "SCN001": {
+            "id": "SCN001",
+            "name": "Sudden Spike in Demand",
+            "impact": "+30%",
+            "duration": "3 Months",
+            "description": "30% increase due to marketing campaign",
+            "category": "demand_increase",
+            "applicableRegions": ["India", "Asia"]
+          },
+          "SCN002": {
+            "id": "SCN002",
+            "name": "Sudden Drop in Demand",
+            "impact": "-20%",
+            "duration": "6 Months",
+            "description": "20% drop due to economic slowdown",
+            "category": "demand_decrease",
+            "applicableRegions": ["India", "Global"]
+          },
+          "SCN003": {
+            "id": "SCN003",
+            "name": "New Market Expansion",
+            "impact": "+40%",
+            "duration": "12 Months",
+            "description": "Launch in new region with 40% uplift",
+            "category": "expansion",
+            "applicableRegions": ["India"]
+          },
+          "SCN004": {
+            "id": "SCN004",
+            "name": "Supplier Disruption",
+            "impact": "-15%",
+            "duration": "4 Months",
+            "description": "Unfulfilled demand due to raw material shortage",
+            "category": "supply_disruption",
+            "applicableRegions": ["India", "Asia"]
+          },
+          "SCN005": {
+            "id": "SCN005",
+            "name": "Fitness Trend Surge",
+            "impact": "+45%",
+            "duration": "8 Months",
+            "description": "45% increase due to fitness trend and gym reopenings",
+            "category": "demand_increase",
+            "applicableRegions": ["USA", "North America"]
+          },
+          "SCN006": {
+            "id": "SCN006",
+            "name": "Competitive Pricing Pressure",
+            "impact": "-25%",
+            "duration": "5 Months",
+            "description": "25% drop due to competitor price reduction",
+            "category": "competitive_pressure",
+            "applicableRegions": ["USA", "Global"]
+          },
+          "SCN007": {
+            "id": "SCN007",
+            "name": "New Flavor Launch",
+            "impact": "+35%",
+            "duration": "10 Months",
+            "description": "Launch new chocolate flavor with 35% demand boost",
+            "category": "product_launch",
+            "applicableRegions": ["USA"]
+          },
+          "SCN008": {
+            "id": "SCN008",
+            "name": "Supply Chain Cost Increase",
+            "impact": "-18%",
+            "duration": "6 Months",
+            "description": "Reduced demand due to increased product costs",
+            "category": "cost_increase",
+            "applicableRegions": ["USA", "North America"]
+          }
+        },
+        "forecast": [
+          { "week": 4, "units": 28000 },
+          { "week": 5, "units": 12000 },
+          { "week": 6, "units": 11000 },
+          { "week": 7, "units": 7000 },
+          { "week": 8, "units": 14000 }
+        ]
+      },
+      "locations": [
+        {
+          "name": "Bhuj",
+          "recommended": true,
+          "distance": 197,
+          "availableQty": 15617,
+          "demandNextWeek": 7112,
+          "safetyStock": 10668,
+          "excessQty": 4949,
+          "eta": "3 Feb 26",
+          "logistics": {
+            "projectedRevenue": 74100,
+            "projectedRevenueChange": 33,
+
+            "additionalRevenue": 72500,
+            "additionalRevenueChange": 42,
+            
+            "logisticCost": -11000,
+            "logisticCostChange": 18,
+            
+            "laborHandlingCost": -6500,
+            "laborHandlingCostChange": 18,
+
+            "transactionCost": -5100,
+            "transactionCostChange": 15,
+
+            "simulatedRevenue": 74500,
+            "simulatedRevenueChange": 29,
+
+            "totalRevenue": 41000,
+            "totalProfit": 21000,
+            "totalCost": 178650,
+            "profitMargin": 24
+          },
+          "graphByLocation": {
+            "actual": [
+              { "week": 1, "units": 2100 },
+              { "week": 2, "units": 2900 },
+              { "week": 3, "units": 3200 },
+              { "week": 4, "units": 4000 }
+            ],
+            "forecast": [
+              { "week": 5, "units": 4700 },
+              { "week": 6, "units": 4300 },
+              { "week": 7, "units": 4000 },
+              { "week": 8, "units": 3800 }
+              
+            ]
+          }
+        },
+        {
+          "name": "Ahemdabad",
+          "recommended": false,
+          "distance": 263,
+          "availableQty": 16873,
+          "demandNextWeek": 7891,
+          "safetyStock": 11836,
+          "excessQty": 5036,
+          "eta": "5 Feb 26",
+          "logistics": {
+            "projectedRevenue": 74000,
+            "additionalRevenue": 72000,
+            "logisticCost": -3000,
+            "laborHandlingCost": -3100,
+            "transactionCost": -5100,
+            "simulatedRevenue": 74100,
+            "totalRevenue": 40000,
+            "totalProfit": 10000,
+            "totalCost": 175000,
+            "profitMargin": 18
+          },
+          "graphByLocation": {
+            "actual": [
+              { "week": 1, "units": 2300 },
+              { "week": 2, "units": 2800 },
+              { "week": 3, "units": 3400 },
+              { "week": 4, "units": 4200 }
+            ],
+            "forecast": [
+              { "week": 5, "units": 4600 },
+              { "week": 6, "units": 4100 },
+              { "week": 7, "units": 3700 },
+              { "week": 8, "units": 3500 }
+              
+            ]
+          }
+        },
+        {
+          "name": "Bhavnagar",
+          "recommended": false,
+          "distance": 317,
+          "availableQty": 18555,
+          "demandNextWeek": 8943,
+          "safetyStock": 13414,
+          "excessQty": 5140,
+          "eta": "29 Jan 26",
+          "logistics": {
+            "projectedRevenue": 74000,
+            "additionalRevenue": 72000,
+            "logisticCost": -3000,
+            "laborHandlingCost": -5300,
+            "transactionCost": -3400,
+            "simulatedRevenue": 74600,
+            "totalRevenue": 40000,
+            "totalProfit": 30000,
+            "totalCost": 168000,
+            "profitMargin": 22
+          },
+           "graphByLocation": {
+            "actual": [
+              { "week": 1, "units": 2000 },
+              { "week": 2, "units": 2700 },
+              { "week": 3, "units": 3100 },
+              { "week": 4, "units": 4100 }
+            ],
+            "forecast": [
+              { "week": 5, "units": 4300 },
+              { "week": 6, "units": 4000 },
+              { "week": 7, "units": 3800 },
+              { "week": 8, "units": 3600 }
+              
+            ]
+          }
+        }
+      ],
+      "recommendedLocation": {
+        "name": "Bhuj",
+        "qty": 2456,
+        "profit": 55750,
+        "profitMargin": 24,
+        "eta": "22 Jan 26",
+        "logisticCost": 102100,
+        "logisticCostChange": -15,
+        "laborHandlingCost": 73000,
+        "laborHandlingCostChange": -15,
+        "revenue": 255650,
+         "revenueChange": 24,
+        "totalCost": 178650,
+        "totalCostChnage": 10
+      },
+      "disruptions": [
+        {
+          "date": "22 Aug, 2025 12:34PM",
+          "location": "Rajkot (RAJB2)",
+          "type": "unexpected regional event",
+          "description": "Sweet Mixes (CS050500D): unexpected regional event.",
+          "selected": false
+        },
+        {
+          "date": "18 Jul, 2025 04:30PM",
+          "location": "Hyderabad (HYD643)",
+          "type": "Weather event",
+          "description": "RTE - Soup Pack (Veg) (G46802008): Weather event",
+          "selected": true
+        }
+      ],
+      "scenarios": [
+        {
+          "name": "Sudden Spike in Demand",
+          "impact": "+30%",
+          "duration": "3 Months",
+          "description": "30% increase due to marketing campaign"
+        },
+        {
+          "name": "Sudden Drop in Demand",
+          "impact": "-20%",
+          "duration": "6 Months",
+          "description": "20% drop due to economic slowdown"
+        },
+        {
+          "name": "New Market Expansion",
+          "impact": "+40%",
+          "duration": "12 Months",
+          "description": "Launch in new region with 40% uplift"
+        },
+        {
+          "name": "Supplier Disruption",
+          "impact": "-15%",
+          "duration": "4 Months",
+          "description": "Unfulfilled demand due to raw material shortage"
+        }
+      ]
+    },
+    {
+      "id": "US075600A",
+      "name": "Protein Bars",
+      "country": "USA",
+      "currency": "USD",
+      "symbol": "$",
+      "currentLocation": "Chicago",
+      "currentInventory": 3240,
+      "nextWeekDemand": 4650,
+      "demandForecast": {
+        "actual": [
+          { "week": 1, "units": 5500 },
+          { "week": 2, "units": 7200 },
+          { "week": 3, "units": 8000 }
+        ],
+        "forecast": [
+          { "week": 4, "units": 8000 },
+          { "week": 5, "units": 7800 },
+          { "week": 6, "units": 7000 },
+          { "week": 7, "units": 6200 },
+          { "week": 8, "units": 5800 }
+        ]
+      },
+      "locations": [
+        {
+          "name": "Denver",
+          "recommended": true,
+          "distance": 920,
+          "availableQty": 18500,
+          "demandNextWeek": 6800,
+          "safetyStock": 12400,
+          "excessQty": 6100,
+          "eta": "29 Jan 26",
+          "logistics": {
+            "projectedRevenue": 188000,
+            "projectedRevenueChange": 30,
+
+            "additionalRevenue": 57000,
+            "additionalRevenueChange": 45,
+
+            "logisticCost": -19000,
+            "logisticCostChange": 15,
+
+            "laborHandlingCost": -13000,
+            "laborHandlingCostChange": 15,
+
+            "transactionCost": -7000,
+            "transactionCostChange": 10,
+
+            "simulatedRevenue": 206000,
+            "simulatedRevenueChange": 34,
+
+            "totalRevenue": 98000,
+            "totalProfit": 58000,
+            "totalCost": 142000,
+            "profitMargin": 28
+          },
+          "graphByLocation": {
+            "actual": [
+              { "week": 1, "units": 2100 },
+              { "week": 2, "units": 2900 },
+              { "week": 3, "units": 3200 }
+              
+            ],
+            "forecast": [
+              { "week": 4, "units": 4000 },
+              { "week": 5, "units": 4700 },
+              { "week": 6, "units": 4300 },
+              { "week": 7, "units": 4000 },
+              { "week": 8, "units": 3800 }
+              
+            ]
+          }
+        },
+        {
+          "name": "Phoenix",
+          "recommended": false,
+          "distance": 1420,
+          "availableQty": 16200,
+          "demandNextWeek": 7200,
+          "safetyStock": 11800,
+          "excessQty": 4400,
+          "eta": "9 Feb 26",
+          "logistics": {
+            "projectedRevenue": 118000,
+            "additionalRevenue": 115000,
+            "logisticCost": -22000,
+            "laborHandlingCost": -15800,
+            "transactionCost": -9500,
+            "simulatedRevenue": 119000,
+            "totalRevenue": 86000,
+            "totalProfit": 38700,
+            "totalCost": 156000,
+            "profitMargin": 22
+          },
+          "graphByLocation": {
+            "actual": [
+              { "week": 1, "units": 2300 },
+              { "week": 2, "units": 2800 },
+              { "week": 3, "units": 3400 },
+              { "week": 4, "units": 4200 }
+            ],
+            "forecast": [
+              { "week": 5, "units": 4600 },
+              { "week": 6, "units": 4100 },
+              { "week": 7, "units": 3700 },
+              { "week": 8, "units": 3500 }
+              
+            ]
+          }
+        },
+        {
+          "name": "Dallas",
+          "recommended": false,
+          "distance": 925,
+          "availableQty": 19800,
+          "demandNextWeek": 8900,
+          "safetyStock": 14200,
+          "excessQty": 5600,
+          "eta": "30 Jan 26",
+          "logistics": {
+            "projectedRevenue": 128000,
+            "additionalRevenue": 122000,
+            "logisticCost": -16800,
+            "laborHandlingCost": -13500,
+            "transactionCost": -7900,
+            "simulatedRevenue": 127000,
+            "totalRevenue": 102000,
+            "totalProfit": 63800,
+            "totalCost": 138000,
+            "profitMargin": 31
+          },
+          "graphByLocation": {
+            "actual": [
+              { "week": 1, "units": 2000 },
+              { "week": 2, "units": 2700 },
+              { "week": 3, "units": 3100 },
+              { "week": 4, "units": 4100 }
+            ],
+            "forecast": [
+              { "week": 5, "units": 4300 },
+              { "week": 6, "units": 4000 },
+              { "week": 7, "units": 3800 },
+              { "week": 8, "units": 3600 }
+              
+            ]
+          }
+        }
+      ],
+      "recommendedLocation": {
+        "name": "Denver",
+        "qty": 6800,
+        "profit": 91000,
+        "profitMargin": 30,
+        "eta": "25 Jan 26",
+        "logisticCost": 19000,
+        "logisticCostChange": -15,
+        "laborHandlingCost": 13000,
+        "laborHandlingCostChange": -15,
+        "revenue": 245000,
+        "revenueChange": 24,
+        "totalCost": 142000,
+        "totalCostChnage": 10
+      },
+      "disruptions": [
+        {
+          "date": "15 Sept, 2025 09:15AM",
+          "location": "Chicago (CHI01)",
+          "type": "supply chain disruption",
+          "description": "Protein Bars (US075600A): supply chain disruption due to transport strike.",
+          "selected": true
+        },
+        {
+          "date": "28 Oct, 2025 02:45PM",
+          "location": "Denver (DEN25)",
+          "type": "Weather event",
+          "description": "Energy Drinks (ED45820): Severe weather affecting distribution",
+          "selected": false
+        }
+      ],
+      "scenarios": [
+        {
+          "name": "Sudden Spike in Demand",
+          "impact": "+30%",
+          "duration": "3 Months",
+          "description": "30% surge due to viral social media challenge (3 mo)"
+        },
+        {
+          "name": "Sudden Drop in Demand",
+          "impact": "-20%",
+          "duration": "6 Months",
+          "description": "20% dip after negative dietary press (6 mo)"
+        },
+        {
+          "name": "New Market Expansion",
+          "impact": "+40%",
+          "duration": "12 Months",
+          "description": "Launch in health stores, 40% uplift (12 mo)"
+        },
+        {
+          "name": "Supply Chain Cost Increase",
+          "impact": "-15%",
+          "duration": "4 Months",
+          "description": "15% shortage from protein source delays (4 mo)"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "lastUpdated": "2025-01-15T10:30:00Z",
+    "version": "1.0",
+    "units": {
+      "distance": "km",
+      "quantity": "units",
+      "time": "hours"
+    }
+  }
+}
