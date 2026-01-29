@@ -74,29 +74,14 @@ function GraphUpArrowIcon({ positive }) {
   );
 }
 
-function AddModelDropdown({ selected = [], onChange }) {
-  const [models, setModels] = useState([]);
-  const [loading, setLoading] = useState(true);
+function AddModelDropdown({ selected = [], onChange, models = [] }) {
+  const [loading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/models`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
-      .then((data) => {
-        setModels(data);
-        if (onChange && data.length > 0) {
-          const allModelIds = data.map((m) => m.id);
-          onChange(allModelIds);
-        }
-      })
-      .catch(() => setModels([]))
-      .finally(() => setLoading(false));
-  }, [onChange]);
 
   const filteredModels = useMemo(() => {
     if (!searchTerm) return models;
     return models.filter((m) =>
-      m.model_name.toLowerCase().includes(searchTerm.toLowerCase())
+      m.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [models, searchTerm]);
 
@@ -164,10 +149,10 @@ function AddModelDropdown({ selected = [], onChange }) {
               component={ButtonBase}
               onClick={() => {
                 if (!onChange) return;
-                const checked = selected.includes(m.id);
+                const checked = selected.some(id => String(id) === String(m.id));
                 onChange(
                   checked
-                    ? selected.filter((id) => id !== m.id)
+                    ? selected.filter((id) => String(id) !== String(m.id))
                     : [...selected, m.id]
                 );
               }}
@@ -175,7 +160,7 @@ function AddModelDropdown({ selected = [], onChange }) {
             >
               <ListItemIcon sx={{ minWidth: 30 }}>
                 <Checkbox
-                  checked={selected.includes(m.id)}
+                  checked={selected.some(id => String(id) === String(m.id))}
                   tabIndex={-1}
                   disableRipple
                   size="small"
@@ -183,7 +168,7 @@ function AddModelDropdown({ selected = [], onChange }) {
                 />
               </ListItemIcon>
               <ListItemText
-                primary={m.model_name}
+                primary={m.name}
                 primaryTypographyProps={{ fontSize: 13 }}
               />
             </ListItem>
@@ -529,10 +514,28 @@ export default function ModelComparisonSection() {
   useEffect(() => {
     fetch(`${API_BASE_URL}/getDsModelData`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
-      .then((json) => setRows(transformModelData(json)))
+      .then((json) => {
+        const transformedData = transformModelData(json);
+        setRows(transformedData);
+        // Initialize with all model IDs from the actual data
+        setSelectedModels(transformedData.map(model => model.id));
+      })
       .catch((err) => setLoadErr(err))
       .finally(() => setBusy(false));
   }, []);
+
+  // Close explainability and popup if the model is deselected
+  useEffect(() => {
+    // Close explainability if the model is no longer selected
+    if (explain && !selectedModels.some(id => String(id) === String(explain.id))) {
+      setExplain(null);
+    }
+    
+    // Close popup if the model is no longer selected
+    if (popup && !selectedModels.some(id => String(id) === String(popup.modelId))) {
+      setPopup(null);
+    }
+  }, [selectedModels, explain, popup]);
 
   const openPopup = (metricType, modelId, evt) => {
     evt.stopPropagation();
@@ -558,6 +561,14 @@ export default function ModelComparisonSection() {
     return <Alert severity="error">Failed to load – {String(loadErr)}</Alert>;
   if (!rows.length)
     return <Alert severity="info">No model data available.</Alert>;
+
+  // Filter rows based on selected models (type-safe comparison)
+  const filteredRows = rows.filter(row => 
+    selectedModels.some(id => String(id) === String(row.id))
+  );
+
+  // Find the recommended model (the one with highest accuracy in original list - XGBoost)
+  const recommendedModel = rows.length > 0 ? rows[0] : null;
 
   return (
     <Box
@@ -611,13 +622,14 @@ export default function ModelComparisonSection() {
         </Box>
 
         <Stack direction="row" spacing={0.5}>
-          {rows.map((model, index) => {
+          {filteredRows.map((model, index) => {
             const isFirstCard = index === 0;
-            const shouldBeBlue = isFirstCard || model.isRecommended;
+            const isRecommendedModel = recommendedModel && String(model.id) === String(recommendedModel.id);
+            const shouldBeBlue = isRecommendedModel;
 
             return (
               <Box key={model.id} sx={{ position: "relative" }}>
-                {isFirstCard && (
+                {isRecommendedModel && (
                   <Box
                     sx={{
                       position: "absolute",
@@ -725,7 +737,7 @@ export default function ModelComparisonSection() {
                               fontSize: 16,
                               fontWeight: 500,
                               color:
-                                isFirstCard &&
+                                isRecommendedModel &&
                                 (m.id === "MAPE" || m.id === "WMAPE")
                                   ? "#16A34A"
                                   : "#475569",
@@ -852,6 +864,7 @@ export default function ModelComparisonSection() {
                         <AddModelDropdown
                           selected={selectedModels}
                           onChange={setSelectedModels}
+                          models={rows}
                         />
                       </Box>
                     </ClickAwayListener>
