@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import api from "../utils/api"; 
 
 // --- Highcharts modules (init safely across ESM/CJS) ---
 import exportingInit from "highcharts/modules/exporting";
@@ -54,8 +55,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StarIcon from "@mui/icons-material/Star";
 import CloseIcon from "@mui/icons-material/Close";
 import RemoveIcon from "@mui/icons-material/Remove";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const addAlpha = (hex, alpha = 0.22) => {
   if (!hex) return `rgba(0,0,0,${alpha})`;
@@ -1173,56 +1172,26 @@ export default function ForecastChart({
     ];
   }, [models, loadingModels]);
 
-  // Fetch /events
   useEffect(() => {
     let alive = true;
-    const controller = new AbortController();
 
     const fetchEvents = async () => {
-      const url = `${API_BASE_URL}/events?_=${Date.now()}`;
-      const opts = {
-        method: "GET",
-        signal: controller.signal,
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-        },
-      };
-      const withTimeout = (p, ms = 8000) =>
-        Promise.race([
-          p,
-          new Promise((_, rej) =>
-            setTimeout(() => rej(new Error("timeout")), ms)
-          ),
-        ]);
-
-      const tryOnce = async () => {
-        const res = await withTimeout(fetch(url, opts));
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        if (!text) return [];
-        const ct = res.headers.get("content-type") || "";
-        if (!ct.includes("application/json")) {
-          try {
-            return JSON.parse(text);
-          } catch {
-            throw new Error("non-json body");
-          }
-        }
-        return JSON.parse(text);
-      };
-
       try {
-        let data = await tryOnce();
-        if (!Array.isArray(data)) data = [];
-        if (alive) setEvents(data);
-      } catch {
+        const data = await api.get(`/events?_=${Date.now()}`);
+        if (alive) {
+          setEvents(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        // Retry once after 500ms
         try {
           await new Promise((r) => setTimeout(r, 500));
-          let data = await tryOnce();
-          if (!Array.isArray(data)) data = [];
-          if (alive) setEvents(data);
-        } catch {
+          const data = await api.get(`/events?_=${Date.now()}`);
+          if (alive) {
+            setEvents(Array.isArray(data) ? data : []);
+          }
+        } catch (retryError) {
+          console.error("Retry failed:", retryError);
           if (alive) setEvents([]);
         }
       }
@@ -1231,7 +1200,6 @@ export default function ForecastChart({
     fetchEvents();
     return () => {
       alive = false;
-      controller.abort();
     };
   }, []);
 

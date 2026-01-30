@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import api from "../utils/api";
 import Add from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -28,8 +29,6 @@ import {
   TextField,
   InputAdornment,
 } from "@mui/material";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const metrics = [
   { id: "MAPE", label: "MAPE" },
@@ -178,6 +177,7 @@ function AddModelDropdown({ selected = [], onChange, models = [] }) {
     </Box>
   );
 }
+
 function FvaVsStatsPopup({ modelId, metricType, onClose }) {
   const [series, setSeries] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,10 +191,8 @@ function FvaVsStatsPopup({ modelId, metricType, onClose }) {
         setIsLoading(true);
         setError(null);
 
-        const res = await fetch(`${API_BASE_URL}/getDsModelMetricsData`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const json = await api.get("/getDsModelMetricsData");
 
-        const json = await res.json();
         if (!Array.isArray(json))
           throw new Error("Invalid response format – expected an array");
 
@@ -214,7 +212,7 @@ function FvaVsStatsPopup({ modelId, metricType, onClose }) {
 
         if (mounted) setSeries(data);
       } catch (err) {
-        console.error(" Mini-chart load error:", err);
+        console.error("Mini-chart load error:", err);
         if (mounted) setError(err.message);
       } finally {
         if (mounted) setIsLoading(false);
@@ -315,17 +313,15 @@ function ExplainFrame({ modelName, modelId, onClose }) {
     const load = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(
-          `${API_BASE_URL}/getDsModelFeaturesData?model_id=${modelId}`
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
+        const json = await api.get(`/getDsModelFeaturesData?model_id=${modelId}`);
+        
         const list = json
           .filter((d) => d.model_id === modelId)
           .map((d) => ({ name: d.feature_name, impact: Number(d.impact) }))
           .sort((a, b) => b.impact - a.impact);
         if (mounted) setFeaturesData(list);
       } catch (err) {
+        console.error("Error loading features:", err);
         if (mounted) setError(err.message);
       } finally {
         if (mounted) setIsLoading(false);
@@ -512,15 +508,18 @@ export default function ModelComparisonSection() {
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/getDsModelData`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
+    api
+      .get("/getDsModelData")
       .then((json) => {
         const transformedData = transformModelData(json);
         setRows(transformedData);
         // Initialize with all model IDs from the actual data
         setSelectedModels(transformedData.map(model => model.id));
       })
-      .catch((err) => setLoadErr(err))
+      .catch((err) => {
+        console.error("Error loading model data:", err);
+        setLoadErr(err);
+      })
       .finally(() => setBusy(false));
   }, []);
 

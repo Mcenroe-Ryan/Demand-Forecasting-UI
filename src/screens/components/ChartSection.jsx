@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import api from "../utils/api"
 import {
   Box,
   Button,
@@ -24,8 +25,6 @@ import {
 } from "@mui/icons-material";
 import { useAlert } from "./AlertContext";
 import Highcharts from "highcharts";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const CustomLegend = ({
   legendConfig = [],
@@ -443,13 +442,7 @@ export const ChartSection = () => {
     };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/forecastAlerts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(filters),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.json();
+      const raw = await api.post("/forecastAlerts", filters);
       const cleaned = trimForecast(raw);
       setForecastData(cleaned);
       selectAlert({ selectedAlert: alert, forecastData: cleaned });
@@ -466,14 +459,10 @@ export const ChartSection = () => {
 
   const updateCheckedStatus = async (id, newValue) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/forecast-error/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ in_checked: newValue }),
+      const result = await api.put(`/forecast-error/${id}`, {
+        in_checked: newValue,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const { updated } = await res.json();
-      return updated.is_checked;
+      return result.updated.is_checked;
     } catch (err) {
       console.error("Checkbox update failed:", err);
       return null;
@@ -484,9 +473,7 @@ export const ChartSection = () => {
     (async () => {
       try {
         setLoadingState(true);
-        const res = await fetch(`${API_BASE_URL}/getAllAlerts`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const alerts = await res.json();
+        const alerts = await api.get("/getAllAlerts");
         setRawAlertsData(alerts);
 
         const rows = alerts
@@ -505,10 +492,11 @@ export const ChartSection = () => {
         if (rows.length) {
           const defaultRow = rows[0];
           setSelectedAlertId(defaultRow.id);
-          setErrorMessage(defaultRow.message); 
+          setErrorMessage(defaultRow.message);
           await fetchForecastData(defaultRow.rawData);
         }
       } catch (err) {
+        console.error("Error loading alerts:", err);
         setError(err.message);
       } finally {
         setLoadingState(false);
@@ -517,21 +505,22 @@ export const ChartSection = () => {
   }, []);
 
   useEffect(() => {
-    setModelsLoading(true);
-    fetch(`${API_BASE_URL}/models`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch models");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchModels = async () => {
+      setModelsLoading(true);
+      try {
+        const data = await api.get("/models");
         setModels(data);
         if (data.length > 0) setSelectedModel(data[0].model_name);
+        setModelsError(null);
+      } catch (err) {
+        console.error("Error fetching models:", err);
+        setModelsError(err.message || "Failed to fetch models");
+      } finally {
         setModelsLoading(false);
-      })
-      .catch((err) => {
-        setModelsError(err.message);
-        setModelsLoading(false);
-      });
+      }
+    };
+
+    fetchModels();
   }, []);
 
   const onAlertSelect = async (row) => {

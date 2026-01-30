@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "./utils/api";
 import {
   AppBar,
   Avatar,
@@ -45,8 +45,7 @@ import Chart from "./components/Messaging";
 import ChatBot from "./components/Chatbox";
 import { AnalyticsFrameSection } from "./components/AnalyticsFrameSection";
 import ScenarioSection from "./components/ScenarioSection";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import AppHeader from "./components/AppHeader";
 
 function getSelectedNames(selectedIds, options, optionKey, displayKey) {
   return options
@@ -326,13 +325,8 @@ export const DemandProjectMonth = () => {
     const fetchAlertCount = async () => {
       setAlertCountLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/getAlertCount`);
-        if (response.ok) {
-          const count = await response.json();
-          setAlertCount(count);
-        } else {
-          setAlertCount(null);
-        }
+        const count = await api.get("/getAlertCount");
+        setAlertCount(count);
       } catch (error) {
         console.error("Error fetching alert count:", error);
         setAlertCount(null);
@@ -454,32 +448,23 @@ export const DemandProjectMonth = () => {
     setIsChatBotOpen(false);
   };
 
-  const fetchChannels = useCallback(() => {
+  const fetchChannels = useCallback(async () => {
     setLoadingChannels(true);
-    axios
-      .get(`${API_BASE_URL}/getAllChannels`, {
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
-        },
-        params: {
-          _: Date.now(),
-        },
-      })
-      .then((res) => {
-        setFiltersData((prev) => ({
-          ...prev,
-          channels: Array.isArray(res.data) ? res.data : [],
-        }));
-      })
-      .catch(() =>
-        setFiltersData((prev) => ({
-          ...prev,
-          channels: [],
-        }))
-      )
-      .finally(() => setLoadingChannels(false));
+    try {
+      const data = await api.get("/getAllChannels?_=" + Date.now());
+      setFiltersData((prev) => ({
+        ...prev,
+        channels: Array.isArray(data) ? data : [],
+      }));
+    } catch (error) {
+      console.error("Error fetching channels:", error);
+      setFiltersData((prev) => ({
+        ...prev,
+        channels: [],
+      }));
+    } finally {
+      setLoadingChannels(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -518,16 +503,13 @@ export const DemandProjectMonth = () => {
     const fetchModels = async () => {
       setLoadingModels(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/models`);
-        if (response.ok) {
-          const modelsData = await response.json();
-          setModels(modelsData);
-          if (modelsData.length > 0) {
-            const defaultModel =
-              modelsData.find((m) => m.model_name === "XGBoost") ||
-              modelsData[0];
-            setModelName(defaultModel.model_name);
-          }
+        const modelsData = await api.get("/models");
+        setModels(modelsData);
+        if (modelsData.length > 0) {
+          const defaultModel =
+            modelsData.find((m) => m.model_name === "XGBoost") ||
+            modelsData[0];
+          setModelName(defaultModel.model_name);
         }
       } catch (error) {
         console.error("Error fetching models:", error);
@@ -539,23 +521,23 @@ export const DemandProjectMonth = () => {
     fetchModels();
   }, []);
 
-  const fetchCountries = () => {
+  const fetchCountries = async () => {
     setLoadingCountries(true);
-    axios
-      .get(`${API_BASE_URL}/getAllCountries`)
-      .then((res) => {
-        setFiltersData((prev) => ({
-          ...prev,
-          countries: Array.isArray(res.data) ? res.data : [],
-        }));
-      })
-      .catch(() =>
-        setFiltersData((prev) => ({
-          ...prev,
-          countries: [],
-        }))
-      )
-      .finally(() => setLoadingCountries(false));
+    try {
+      const data = await api.get("/getAllCountries");
+      setFiltersData((prev) => ({
+        ...prev,
+        countries: Array.isArray(data) ? data : [],
+      }));
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      setFiltersData((prev) => ({
+        ...prev,
+        countries: [],
+      }));
+    } finally {
+      setLoadingCountries(false);
+    }
   };
 
   useEffect(() => {
@@ -575,15 +557,16 @@ export const DemandProjectMonth = () => {
       setSelectedSKUs([]);
       return;
     }
-    setLoadingStates(true);
-    axios
-      .post(`${API_BASE_URL}/states-by-country`, {
-        countryIds: selectedCountry,
-      })
-      .then((res) => {
+
+    const fetchStates = async () => {
+      setLoadingStates(true);
+      try {
+        const data = await api.post("/states-by-country", {
+          countryIds: selectedCountry,
+        });
         setFiltersData((prev) => ({
           ...prev,
-          states: Array.isArray(res.data) ? res.data : [],
+          states: Array.isArray(data) ? data : [],
           cities: [],
           plants: [],
           categories: [],
@@ -594,8 +577,8 @@ export const DemandProjectMonth = () => {
         setSelectedPlants([]);
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error fetching states:", error);
         setFiltersData((prev) => ({
           ...prev,
           states: [],
@@ -609,8 +592,12 @@ export const DemandProjectMonth = () => {
         setSelectedPlants([]);
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .finally(() => setLoadingStates(false));
+      } finally {
+        setLoadingStates(false);
+      }
+    };
+
+    fetchStates();
   }, [selectedCountry]);
 
   useEffect(() => {
@@ -628,15 +615,16 @@ export const DemandProjectMonth = () => {
       setSelectedSKUs([]);
       return;
     }
-    setLoadingCities(true);
-    axios
-      .post(`${API_BASE_URL}/cities-by-states`, {
-        stateIds: selectedState,
-      })
-      .then((res) => {
+
+    const fetchCities = async () => {
+      setLoadingCities(true);
+      try {
+        const data = await api.post("/cities-by-states", {
+          stateIds: selectedState,
+        });
         setFiltersData((prev) => ({
           ...prev,
-          cities: Array.isArray(res.data) ? res.data : [],
+          cities: Array.isArray(data) ? data : [],
           plants: [],
           categories: [],
           skus: [],
@@ -645,8 +633,8 @@ export const DemandProjectMonth = () => {
         setSelectedPlants([]);
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error fetching cities:", error);
         setFiltersData((prev) => ({
           ...prev,
           cities: [],
@@ -658,8 +646,12 @@ export const DemandProjectMonth = () => {
         setSelectedPlants([]);
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .finally(() => setLoadingCities(false));
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+
+    fetchCities();
   }, [selectedState]);
 
   useEffect(() => {
@@ -675,23 +667,24 @@ export const DemandProjectMonth = () => {
       setSelectedSKUs([]);
       return;
     }
-    setLoadingPlants(true);
-    axios
-      .post(`${API_BASE_URL}/plants-by-cities`, {
-        cityIds: selectedCities,
-      })
-      .then((res) => {
+
+    const fetchPlants = async () => {
+      setLoadingPlants(true);
+      try {
+        const data = await api.post("/plants-by-cities", {
+          cityIds: selectedCities,
+        });
         setFiltersData((prev) => ({
           ...prev,
-          plants: Array.isArray(res.data) ? res.data : [],
+          plants: Array.isArray(data) ? data : [],
           categories: [],
           skus: [],
         }));
         setSelectedPlants([]);
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error fetching plants:", error);
         setFiltersData((prev) => ({
           ...prev,
           plants: [],
@@ -701,8 +694,12 @@ export const DemandProjectMonth = () => {
         setSelectedPlants([]);
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .finally(() => setLoadingPlants(false));
+      } finally {
+        setLoadingPlants(false);
+      }
+    };
+
+    fetchPlants();
   }, [selectedCities]);
 
   useEffect(() => {
@@ -716,22 +713,22 @@ export const DemandProjectMonth = () => {
       setSelectedSKUs([]);
       return;
     }
-    setLoadingCategories(true);
 
-    axios
-      .post(`${API_BASE_URL}/categories-by-plants`, {
-        plantIds: selectedPlants,
-      })
-      .then((res) => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const data = await api.post("/categories-by-plants", {
+          plantIds: selectedPlants,
+        });
         setFiltersData((prev) => ({
           ...prev,
-          categories: Array.isArray(res.data) ? res.data : [],
+          categories: Array.isArray(data) ? data : [],
           skus: [],
         }));
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error fetching categories:", error);
         setFiltersData((prev) => ({
           ...prev,
           categories: [],
@@ -739,8 +736,12 @@ export const DemandProjectMonth = () => {
         }));
         setSelectedCategories([]);
         setSelectedSKUs([]);
-      })
-      .finally(() => setLoadingCategories(false));
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
   }, [selectedPlants]);
 
   useEffect(() => {
@@ -752,26 +753,31 @@ export const DemandProjectMonth = () => {
       setSelectedSKUs([]);
       return;
     }
-    setLoadingSkus(true);
-    axios
-      .post(`${API_BASE_URL}/skus-by-categories`, {
-        categoryIds: selectedCategories,
-      })
-      .then((res) => {
+
+    const fetchSKUs = async () => {
+      setLoadingSkus(true);
+      try {
+        const data = await api.post("/skus-by-categories", {
+          categoryIds: selectedCategories,
+        });
         setFiltersData((prev) => ({
           ...prev,
-          skus: Array.isArray(res.data) ? res.data : [],
+          skus: Array.isArray(data) ? data : [],
         }));
         setSelectedSKUs([]);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error fetching SKUs:", error);
         setFiltersData((prev) => ({
           ...prev,
           skus: [],
         }));
         setSelectedSKUs([]);
-      })
-      .finally(() => setLoadingSkus(false));
+      } finally {
+        setLoadingSkus(false);
+      }
+    };
+
+    fetchSKUs();
   }, [selectedCategories]);
 
   useEffect(() => {
@@ -780,73 +786,12 @@ export const DemandProjectMonth = () => {
 
   return (
     <Box>
-      <AppBar
-        position="static"
-        sx={{
-          bgcolor: "#0288d1",
-          borderBottom: 1,
-          borderColor: "#78909c",
-          boxShadow: 0,
-          height: "56px",
-        }}
-      >
-        <Toolbar sx={{ justifyContent: "space-between", pl: 6 }}>
-          <Stack direction="row" alignItems="center" spacing={1.5}>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Box sx={{ width: 40, height: 35.69, marginLeft: 40 }}>
-                <img
-                  alt="Logo"
-                  src="https://c.animaapp.com/Jwk7dHU9/img/image-3@2x.png"
-                  style={{ width: "100%", height: "100%" , marginLeft: 60}}
-                />
-              </Box>
-              <Stack >
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    fontFamily: "Poppins, Helvetica",
-                    fontWeight: 600,
-                    color: "#ffffff",
-                    marginLeft: 9
-                  }}
-                >
-                  Demand Planning
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontFamily: "Poppins, Helvetica", color: "#ffffff",
-                    marginLeft: 9 }}
-                >
-                  Business Planner
-                </Typography>
-              </Stack>
-            </Stack>
-            <Stack direction="row" alignItems="center" sx={{ p: 2.5 }}>
-              {["M Project 1", "Demand"].map((item, idx, arr) => (
-                <React.Fragment key={item}>
-                  <Typography sx={{ color: "#ffffff", fontSize: "14px" }}>
-                    {item}
-                  </Typography>
-                  {idx < arr.length - 1 && (
-                    <ChevronRightIcon
-                      sx={{ color: "#ffffff", width: 16, height: 16 }}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </Stack>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={1.5}>
-            <IconButton color="inherit">
-              <SearchIcon sx={{ width: 20, height: 20 }} />
-            </IconButton>
-            <Avatar
-              src="https://c.animaapp.com/Jwk7dHU9/img/ellipse@2x.png"
-              sx={{ width: 38, height: 36 }}
-            />
-          </Stack>
-        </Toolbar>
-      </AppBar>
+           <AppHeader
+        breadcrumbs={[
+          { label: "M Project 1" },
+          { label: "Demand" }
+        ]}
+      />
 
       <Box
         ref={scrollRef}

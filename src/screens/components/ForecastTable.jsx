@@ -5,6 +5,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
+import api from "../utils/api";
 import {
   Box,
   IconButton,
@@ -35,8 +36,6 @@ import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const Z_INDEX_LAYERS = {
   TABLE_CELL: 1,
@@ -83,18 +82,8 @@ async function updateConsensusForecastAPI(payload) {
   _lastUpdateTimestamp = now;
   _consensusInFlightKey = key;
 
-  _consensusInFlightPromise = fetch(`${API_BASE_URL}/forecast/consensus`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-    .then(async (res) => {
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Failed to update consensus forecast");
-      }
-      return res.json();
-    })
+  _consensusInFlightPromise = api
+    .put("/forecast/consensus", payload)
     .finally(() => {
       setTimeout(() => {
         _consensusInFlightKey = null;
@@ -868,26 +857,8 @@ export default function ForecastTable({
     return set;
   }, [period, visibleColumns]);
 
-  // const validateSingleSKUSelection = () => {
-  //   if (!selectedSKUs || selectedSKUs.length === 0) {
-  //     setErrorSnackbar({
-  //       open: true,
-  //       message: "Please select at least one SKU to edit consensus.",
-  //     });
-  //     return false;
-  //   }
-  //   if (selectedSKUs.length > 1) {
-  //     setErrorSnackbar({
-  //       open: true,
-  //       message:
-  //         "Consensus editing is only allowed for single SKU selection. Please select only one SKU.",
-  //     });
-  //     return false;
-  //   }
-  //   return true;
-  // };
   const validateSingleSKUSelection = () => {
-    // ✅ New: ensure channel is selected before updating consensus
+    // Ensure channel is selected before updating consensus
     if (
       !selectedChannels ||
       (Array.isArray(selectedChannels) && selectedChannels.length === 0)
@@ -941,7 +912,6 @@ export default function ForecastTable({
     if (!canEditConsensus) setHighlightEditableCells(false);
   }, [canEditConsensus]);
 
-  // ---------- DEDUPED FORECAST FETCH ----------
   const fetchForecastData = useCallback(
     async (force = false) => {
       if (!startDate || !endDate) return;
@@ -968,29 +938,21 @@ export default function ForecastTable({
       setIsLoading(true);
 
       const endpoint =
-        period === "W"
-          ? `${API_BASE_URL}/weekly-forecast`
-          : `${API_BASE_URL}/forecast`;
+        period === "W" ? "/weekly-forecast" : "/forecast";
 
       try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            startDate,
-            endDate,
-            country: selectedCountry,
-            state: selectedState,
-            cities: selectedCities,
-            plants: selectedPlants,
-            categories: selectedCategories,
-            skus: selectedSKUs,
-            channels: selectedChannels,
-            model_name: modelName,
-          }),
+        const raw = await api.post(endpoint, {
+          startDate,
+          endDate,
+          country: selectedCountry,
+          state: selectedState,
+          cities: selectedCities,
+          plants: selectedPlants,
+          categories: selectedCategories,
+          skus: selectedSKUs,
+          channels: selectedChannels,
+          model_name: modelName,
         });
-
-        const raw = await res.json();
 
         if (!raw || raw.length === 0) {
           setData({});
@@ -1131,7 +1093,6 @@ export default function ForecastTable({
   useEffect(() => {
     fetchForecastData(false);
   }, [fetchForecastData]);
-  // ---------- END DEDUPED FORECAST FETCH ----------
 
   const [actualLatestMonth, setActualLatestMonth] = useState(null);
 

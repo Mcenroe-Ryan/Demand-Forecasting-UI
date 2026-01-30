@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "./utils/api"; 
 import PlusLgIcon from "@mui/icons-material/Add";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TrashIcon from "@mui/icons-material/Delete";
@@ -45,8 +46,7 @@ import {
   Alert,
   Collapse,
 } from "@mui/material";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import AppHeader from "./components/AppHeader";
 
 export const ImportProfilesData = () => {
   const navigate = useNavigate();
@@ -92,43 +92,27 @@ export const ImportProfilesData = () => {
     setShowMessage(false);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/generate/all`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const result = await api.post("/generate/all", {});
+      console.log("Data generation successful:", result);
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Data generation successful:", result);
+      if (result.success && result.data) {
+        const { totalRecords, results } = result.data;
+        const indiaRecords =
+          results.find((r) => r.country === "India")?.recordsGenerated || 0;
+        const usaRecords =
+          results.find((r) => r.country === "USA")?.recordsGenerated || 0;
 
-        if (result.success && result.data) {
-          const { totalRecords, results } = result.data;
-          const indiaRecords =
-            results.find((r) => r.country === "India")?.recordsGenerated || 0;
-          const usaRecords =
-            results.find((r) => r.country === "USA")?.recordsGenerated || 0;
-
-          setGenerationResult({
-            success: true,
-            totalRecords,
-            indiaRecords,
-            usaRecords,
-            timestamp: result.data.timestamp,
-          });
-        } else {
-          setGenerationResult({
-            success: true,
-            message: "Data generated successfully!",
-          });
-        }
-      } else {
-        const errorData = await response.json();
-        console.error("Data generation failed:", errorData);
         setGenerationResult({
-          success: false,
-          message: errorData.message || "Unknown error occurred",
+          success: true,
+          totalRecords,
+          indiaRecords,
+          usaRecords,
+          timestamp: result.data.timestamp,
+        });
+      } else {
+        setGenerationResult({
+          success: true,
+          message: "Data generated successfully!",
         });
       }
     } catch (error) {
@@ -140,7 +124,7 @@ export const ImportProfilesData = () => {
     } finally {
       setIsGenerating(false);
       setShowMessage(true);
-      
+
       setTimeout(() => {
         setShowMessage(false);
       }, 10000);
@@ -177,21 +161,29 @@ export const ImportProfilesData = () => {
             {success ? (
               <Box>
                 <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                  ✅ Data Generated Successfully!
+                  Data Generated Successfully!
                 </Typography>
                 {generationResult.totalRecords ? (
                   <Box>
                     <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      <strong>Total Records:</strong> {generationResult.totalRecords.toLocaleString()}
+                      <strong>Total Records:</strong>{" "}
+                      {generationResult.totalRecords.toLocaleString()}
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      📍 <strong>India:</strong> {generationResult.indiaRecords.toLocaleString()} records
+                      📍 <strong>India:</strong>{" "}
+                      {generationResult.indiaRecords.toLocaleString()} records
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      🇺🇸 <strong>USA:</strong> {generationResult.usaRecords.toLocaleString()} records
+                      🇺🇸 <strong>USA:</strong>{" "}
+                      {generationResult.usaRecords.toLocaleString()} records
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Generated at: {new Date(generationResult.timestamp).toLocaleString()}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 1 }}
+                    >
+                      Generated at:{" "}
+                      {new Date(generationResult.timestamp).toLocaleString()}
                     </Typography>
                   </Box>
                 ) : (
@@ -400,105 +392,18 @@ export const ImportProfilesData = () => {
 
   return (
     <Box sx={{ bgcolor: "#eff6ff", height: "100vh" }}>
-      <AppBar position="static" sx={{ bgcolor: "#0288d1" }}>
-        <Toolbar
-          sx={{ justifyContent: "space-between", minHeight: "40px", px: 2 }}
-        >
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton color="inherit">
-              <ListIcon />
-            </IconButton>
-            <Box
-              component="img"
-              src="https://c.animaapp.com/QiGZUQ6N/img/image-3@2x.png"
-              sx={{ width: 40, height: 35.69 }}
-            />
-            <Stack>
-              <Typography variant="subtitle2" fontWeight={600} color="white">
-                Demand Planning
-              </Typography>
-              <Typography variant="caption" color="white">
-                Business Planner
-              </Typography>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body2" color="white">
-                Import Profiles
-              </Typography>
-              {showDetails && (
-                <>
-                  <ChevronRightIcon fontSize="small" sx={{ color: "white" }} />
-                  <Typography variant="body2" color="white">
-                    Project Details
-                  </Typography>
-                </>
-              )}
-            </Stack>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton color="inherit">
-              <SearchIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <BellIcon />
-            </IconButton>
-            <Avatar
-              src="https://c.animaapp.com/QiGZUQ6N/img/ellipse-1@2x.png"
-              sx={{ width: 35, height: 35 }}
-            />
-          </Stack>
-        </Toolbar>
-        <Toolbar
-          variant="dense"
-          sx={{ bgcolor: "#455a64", minHeight: "41px", px: 2 }}
-        >
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton
-              size="small"
-              onClick={() => navigate("/dashboard")}
-              aria-label="Back to Dashboard"
-            >
-              <img
-                src="https://c.animaapp.com/Jwk7dHU9/img/union.svg"
-                alt="Back"
-                style={{ width: 20, height: 20 }}
-              />
-            </IconButton>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ bgcolor: "rgba(255,255,255,0.3)" }}
-            />
-            <IconButton color="inherit" size="small">
-              <PencilIcon fontSize="small" />
-            </IconButton>
-            <IconButton color="inherit" size="small">
-              <TrashIcon fontSize="small" />
-            </IconButton>
-            <Box position="relative" sx={{ width: 24, height: 20 }}>
-              <ChatBubbleOutlineIcon
-                sx={{ position: "absolute", width: 20, height: 20 }}
-              />
-              <img
-                src="https://c.animaapp.com/QiGZUQ6N/img/ellipse-309--stroke-.svg"
-                alt="Notification"
-                style={{
-                  position: "absolute",
-                  width: 12,
-                  height: 12,
-                  top: 0,
-                  left: 12,
-                }}
-              />
-            </Box>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ bgcolor: "rgba(255,255,255,0.3)" }}
-            />
-          </Stack>
-        </Toolbar>
-      </AppBar>
+      <AppHeader
+        showHamburger={true}
+        showNotifications={true}
+        breadcrumbs={
+          showDetails
+            ? [
+                { label: "Import Profiles" },
+                { label: "Project Details" }
+              ]
+            : [{ label: "Import Profiles" }]
+        }
+      />
 
       <Box sx={{ p: 2 }}>
         {!showDetails ? (
@@ -665,7 +570,7 @@ export const ImportProfilesData = () => {
                   {isGenerating ? "Generating..." : "Generate"}
                 </Button>
               </Stack>
-              
+
               {renderGenerationMessage()}
             </Card>
           </>

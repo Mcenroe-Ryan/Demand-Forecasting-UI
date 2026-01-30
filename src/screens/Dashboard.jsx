@@ -12,6 +12,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
+import AppHeader from "./components/AppHeader";
 import {
   AppBar,
   Avatar,
@@ -35,6 +36,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Padding } from "@mui/icons-material";
+
 
 const ellipse = "https://c.animaapp.com/dFM9GSxT/img/ellipse@2x.png";
 const image3 = "https://c.animaapp.com/dFM9GSxT/img/image-3@2x.png";
@@ -150,58 +152,10 @@ const UnifiedDashboardPage = () => {
   return (
     <Box sx={{ bgcolor: "#E2E8F0", minHeight: "100vh" }}>
       {/* NavBar */}
-      <AppBar
-        position="static"
-        sx={{ bgcolor: "#0284C7", borderBottom: 1, borderColor: "#78909c" }}
-      >
-        <Toolbar
-          sx={{ justifyContent: "space-between", minHeight: "unset", p: 0 }}
-        >
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton color="inherit" edge="start" sx={{ visibility: "hidden" }}>
-              <ListIcon />
-            </IconButton>            
-            <Box
-              component="img"
-              src={image3}
-              sx={{ width: 40, height: 35.69}}
-            />
-            <Stack>
-              <Typography variant="subtitle2" fontWeight={600} color="white">
-                Demand Planning
-              </Typography>
-              <Typography variant="caption" color="white">
-                Business Planner
-              </Typography>
-            </Stack>
-            <Breadcrumbs
-            separator={<ChevronRightIcon fontSize="small" />}
-            sx={{
-              color: "white",
-              "& .MuiTypography-root": {
-                color: "white",
-              },
-              "& .MuiTypography-root:hover": {
-                backgroundColor: "transparent",
-              },
-            }}
-          >
-            <Typography variant="body2" color="inherit">
-              M Project 1
-            </Typography>
-        </Breadcrumbs>
-          </Stack>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <IconButton color="inherit">
-              <SearchIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <NotificationsIcon />
-            </IconButton>
-            <Avatar src={ellipse} alt="User" sx={{ width: 35, height: 35 }} />
-          </Stack>
-        </Toolbar>
-      </AppBar>
+            <AppHeader
+        showNotifications={true}
+        breadcrumbs={[{ label: "M Project 1" }]}
+      />
       {/* Tabs and Actions */}
       <Box
         sx={{
