@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import api from "./utils/api"; 
 
 // MUI components for UI elements
 import {
@@ -23,8 +24,6 @@ import ShareOutlined from "@mui/icons-material/ShareOutlined";
 
 import { useAlert } from "./AlertContext";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-
 export const AlertsSection = () => {
   const { selectedAlertData, isLoading } = useAlert();
   const [selectedTimePeriod, setSelectedTimePeriod] = useState("month");
@@ -36,21 +35,22 @@ export const AlertsSection = () => {
   const [modelsError, setModelsError] = useState(null);
 
   useEffect(() => {
-    setModelsLoading(true);
-    fetch(`${API_BASE_URL}/models`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch models");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchModels = async () => {
+      setModelsLoading(true);
+      try {
+        const data = await api.get("/models");
         setModels(data);
         if (data.length > 0) setSelectedModel(data[0].model_name);
+        setModelsError(null);
+      } catch (err) {
+        console.error("Error fetching models:", err);
+        setModelsError(err.message || "Failed to fetch models");
+      } finally {
         setModelsLoading(false);
-      })
-      .catch((err) => {
-        setModelsError(err.message);
-        setModelsLoading(false);
-      });
+      }
+    };
+
+    fetchModels();
   }, []);
 
   const transformForecastData = (forecastData) => {
